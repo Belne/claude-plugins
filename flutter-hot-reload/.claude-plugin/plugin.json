@@ -1,0 +1,12 @@
+{
+  "name": "flutter-hot-reload",
+  "version": "1.1.0",
+  "description": "Flutter 热重载调试：常驻 flutter run + 命令管道 + 多 ROM 安装弹框自动确认，设备/项目参数化 / Flutter hot-reload debugging: persistent flutter run + command pipe + auto-confirm of OEM install dialogs",
+  "author": {
+    "name": "pxj"
+  },
+  "homepage": "https://github.com/Belne/claude-plugins",
+  "repository": "https://github.com/Belne/claude-plugins",
+  "license": "MIT",
+  "keywords": ["flutter", "hot-reload", "adb", "install-dialog", "windows"]
+}

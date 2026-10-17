@@ -1,0 +1,19 @@
+{
+  "name": "claude-plugins",
+  "owner": {
+    "name": "pxj",
+    "url": "https://github.com/Belne"
+  },
+  "plugins": [
+    {
+      "name": "toast-notifier",
+      "source": "./toast-notifier",
+      "description": "任务完成或需要用户参与时弹出 Windows Toast 系统通知；支持自由内容与回合结束摘要 / Windows toast notifications when tasks finish or user input is needed"
+    },
+    {
+      "name": "flutter-hot-reload",
+      "source": "./flutter-hot-reload",
+      "description": "Flutter 热重载调试：常驻 flutter run + 命令管道 + 多 ROM 安装弹框自动确认 / Flutter hot-reload debugging: persistent flutter run + command pipe + auto-confirm of OEM install dialogs"
+    }
+  ]
+}
