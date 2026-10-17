@@ -1,6 +1,6 @@
 {
   "name": "toast-notifier",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "任务完成或需要用户参与时弹出 Windows Toast 系统通知；支持自由内容与回合结束摘要 / Windows toast notifications when tasks finish or user input is needed",
   "author": {
     "name": "pxj"

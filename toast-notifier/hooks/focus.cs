@@ -36,6 +36,9 @@ static class FocusExe
     [DllImport("user32.dll")] static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
     [DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int cx, int cy, uint flags);
     [DllImport("user32.dll")] static extern void SwitchToThisWindow(IntPtr h, bool altTab);
+    [DllImport("kernel32.dll", SetLastError = true)] static extern bool AttachConsole(uint pid);
+    [DllImport("kernel32.dll")] static extern bool FreeConsole();
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] static extern int GetConsoleTitle(StringBuilder sb, int max);
     const uint KEYEVENTF_KEYUP = 0x2;
     static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
     static readonly IntPtr HWND_NOTOPMOST = new IntPtr(-2);
@@ -73,6 +76,26 @@ static class FocusExe
         int sp = title.IndexOf(' ');
         if (sp > 0 && sp <= 3) return title.Substring(sp + 1).Trim();
         return title.Trim();
+    }
+
+    // Live tab title: attach to the claude process's console and read its title.
+    // WT runs one ConPTY per tab and claude sets that console's title to the WT tab
+    // title ("<status glyph> <session name>"), so this is the exact text UIA needs.
+    // focus.exe is a GUI-subsystem process born without a console (DCOM launches it),
+    // so AttachConsole is legal here — it fails from any process that already owns one.
+    static string PeekConsoleTitle(uint pid)
+    {
+        try
+        {
+            if (!AttachConsole(pid)) { Log("attachconsole failed pid=" + pid); return null; }
+            try
+            {
+                StringBuilder sb = new StringBuilder(1024);
+                return GetConsoleTitle(sb, 1024) > 0 ? sb.ToString() : null;
+            }
+            finally { FreeConsole(); }
+        }
+        catch (Exception ex) { Log("peek title error: " + ex.Message); return null; }
     }
 
     static void FindWindows()
@@ -252,6 +275,19 @@ static class FocusExe
         try { var p = System.Diagnostics.Process.GetProcessById(parentPid); claudeAlive = !p.HasExited; }
         catch { }
         Log("claudeAlive=" + claudeAlive + " windows=" + allTerminals.Count);
+
+        // Live title beats the registry copy: the hook usually registers with an
+        // empty tab_title (it runs in a detached pty and cannot read the real one),
+        // and the title may also have changed since registration anyway.
+        if (parentPid > 0)
+        {
+            string live = PeekConsoleTitle((uint)parentPid);
+            if (!string.IsNullOrEmpty(live))
+            {
+                Log("live title='" + live + "' (registry='" + tabTitle + "')");
+                tabTitle = live;
+            }
+        }
 
         // Locate the window that owns a tab matching the recorded session title
         IntPtr target = IntPtr.Zero;

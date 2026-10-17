@@ -30,10 +30,10 @@ Set-Content "$env:USERPROFILE\.claude\toast-summary.txt" -Value "*`n✅ 构建�
 通知可点击：点击后自动回到该会话所在的 Windows Terminal 窗口和标签（多会话并行时各自独立路由）；会话已退出时自动在新标签执行 `claude --resume <session_id>` 恢复上下文。机制：
 
 - toast.ps1（Stop/Notification hook）把 session_id ↔ WT_SESSION/tab 标题/claude PID 写入 `HKCU\Software\ClaudeCode\Sessions\<session_id>`，并动态注册会话专属 AUMID（通知按会话分组，DisplayName = Claude Code - 项目名；7 天未更新自动清理）
-- 点击 → 系统 DCOM 启动 `hooks/focus.exe --session <id>`（COM CustomActivator；这台 Win10 的 Toast protocol activation 被沙箱拒绝，CustomActivator 是唯一通路）→ UIA 按核心会话名（剥离 ✳◐◑ 状态符）在所有 WT 窗口里定位并切换 tab → 三级前台化（SetForegroundWindow → TOPMOST toggle → SwitchToThisWindow）
+- 点击 → 系统 DCOM 启动 `hooks/focus.exe --session <id>`（COM CustomActivator；这台 Win10 的 Toast protocol activation 被沙箱拒绝，CustomActivator 是唯一通路）→ **AttachConsole(claude PID) 实时读取该会话进程的控制台标题**（WT 每 tab 一个 ConPTY，claude 的控制台标题即 tab 标题）→ UIA 按核心会话名（剥离 ✳◐◑ 状态符）在所有 WT 窗口里定位并切换 tab → 三级前台化（SetForegroundWindow → TOPMOST toggle → SwitchToThisWindow）
 - 重新编译 focus.exe：`csc /target:winexe /r:"GAC 绝对路径\UIAutomationClient.dll" /r:"...UIAutomationTypes.dll" focus.cs`（csc 默认路径找不到这两个 dll）
 - 排查日志：`~/.claude/toast-focus.log`
-- 已知取舍：tab 标题来自 hook 共享 console，hook 在独立 pty 时拿不到可靠标题（留空，点击时退化为窗口级聚焦）；同名会话多 tab 时无法区分
+- 已知取舍：hook 注册时常拿不到 tab 标题（独立 pty 所限，注册表 tab_title 留空）——v1.1.0 起点击时实时从 claude 进程控制台取标题，空注册的老会话同样正确路由；仍存的限制：同标题多 tab 时选第一个，claude 进程已死时退化为窗口级聚焦 + `claude --resume`
 
 ## 注意
 

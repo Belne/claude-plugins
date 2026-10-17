@@ -69,7 +69,8 @@ try {
       }
     } catch { }
     # tab 标题：仅当共享 console 标题可靠时记录（hook 在独立 pty 时读到的是
-    # shell 路径，不可靠；此时留空，点击端靠窗口聚焦兜底）
+    # shell 路径，不可靠；此时留空——focus.exe 点击时会 AttachConsole(claude PID)
+    # 实时读取真实标题，注册表值仅作兜底，见 focus.cs PeekConsoleTitle）
     $tabTitle = ''
     try { $tabTitle = [Console]::Title } catch { }
     if ($tabTitle -match '\.exe($|\s)') { $tabTitle = '' }
