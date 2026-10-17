@@ -8,8 +8,8 @@
 
 ```
 /plugin marketplace add Belne/claude-plugins
-/plugin install toast-notifier@claude-plugins
-/plugin install flutter-hot-reload@claude-plugins
+/plugin install toast-notifier@belne-plugins
+/plugin install flutter-hot-reload@belne-plugins
 ```
 
 ## 插件
